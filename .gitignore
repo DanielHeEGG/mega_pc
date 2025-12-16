@@ -1,0 +1,11 @@
+.DS_Store
+
+.vscode/
+
+venv/
+virtualenv/
+
+build/
+__pycache__/
+
+*.gds
