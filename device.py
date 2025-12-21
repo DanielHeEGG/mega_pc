@@ -220,9 +220,6 @@ def r_flexure_half() -> gf.Component:
     anchor_angle0 = beam_angle + 0.5 * RFLEX_BEAM_WIDTH / RFLEX_ANCHOR_RADIUS0 / (
         np.pi / 180
     )
-    anchor_angle1 = beam_angle + (
-        0.5 * RFLEX_BEAM_WIDTH + CAVITY_WIDTH
-    ) / RFLEX_ANCHOR_RADIUS0 / (np.pi / 180)
 
     _ = c << gl.basic.ring(
         radius_inner=RFLEX_ANCHOR_RADIUS0,
@@ -272,7 +269,12 @@ def r_drive_half() -> gf.Component:
     )
     _ = c << gl.basic.ring(
         radius_inner=RFLEX_ANCHOR_RADIUS0,
-        radius_outer=RDRIVE_INNER_RADIUS,
+        radius_outer=RDRIVE_INNER_RADIUS
+        + gl.utils.sagitta_offset_safe(
+            radius=RDRIVE_INNER_RADIUS,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        ),
         angles=(-connector0_angle, connector0_angle),
         geometry_layer=LAYERS.DEVICE,
         angle_resolution=ANGLE_RESOLUTION,
@@ -281,8 +283,18 @@ def r_drive_half() -> gf.Component:
 
     connector1_angle = 0.5 * beam_angle
     _ = c << gl.basic.ring(
-        radius_inner=CENTER_CARRIAGE_RADIUS,
-        radius_outer=RFLEX_ANCHOR_RADIUS0,
+        radius_inner=CENTER_CARRIAGE_RADIUS
+        - gl.utils.sagitta_offset_safe(
+            radius=CENTER_CARRIAGE_RADIUS,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        ),
+        radius_outer=RFLEX_ANCHOR_RADIUS0
+        + gl.utils.sagitta_offset_safe(
+            radius=RFLEX_ANCHOR_RADIUS0,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        ),
         angles=(-connector1_angle, connector1_angle),
         geometry_layer=LAYERS.DEVICE,
         angle_resolution=ANGLE_RESOLUTION,
@@ -298,9 +310,23 @@ def r_drive_half() -> gf.Component:
         release_spec=None,
     )
 
+    handle_connector_inner_radius = RFLEX_ANCHOR_RADIUS1 - gl.utils.sagitta_offset_safe(
+        radius=RFLEX_ANCHOR_RADIUS1,
+        chord=0,
+        angle_resolution=ANGLE_RESOLUTION,
+    )
+    handle_connector_outer_radius = (
+        RDRIVE_MID_RADIUS
+        + 0.5 * CAVITY_WIDTH
+        + gl.utils.sagitta_offset_safe(
+            radius=RDRIVE_MID_RADIUS + 0.5 * CAVITY_WIDTH,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        )
+    )
     _ = c << gl.basic.ring(
-        radius_inner=RFLEX_ANCHOR_RADIUS1,
-        radius_outer=RDRIVE_MID_RADIUS + 0.5 * CAVITY_WIDTH,
+        radius_inner=handle_connector_inner_radius,
+        radius_outer=handle_connector_outer_radius,
         angles=(-90, -0.5 * RDRIVE_ROTOR_SPAN),
         geometry_layer=LAYERS.HANDLE_P1,
         angle_resolution=ANGLE_RESOLUTION,
@@ -308,8 +334,8 @@ def r_drive_half() -> gf.Component:
     )
 
     _ = c << gl.basic.ring(
-        radius_inner=RFLEX_ANCHOR_RADIUS1,
-        radius_outer=RDRIVE_MID_RADIUS + 0.5 * CAVITY_WIDTH,
+        radius_inner=handle_connector_inner_radius,
+        radius_outer=handle_connector_outer_radius,
         angles=(0.5 * RDRIVE_ROTOR_SPAN, 90),
         geometry_layer=LAYERS.HANDLE_P1,
         angle_resolution=ANGLE_RESOLUTION,
@@ -561,8 +587,18 @@ def zr_connector_half() -> gf.Component:
 
     for span in ZR_CONNECTOR_SPANS:
         _ = c << gl.basic.ring(
-            radius_inner=RDRIVE_OUTER_RADIUS,
-            radius_outer=ZDRIVE_INNER_RADIUS,
+            radius_inner=RDRIVE_OUTER_RADIUS
+            - gl.utils.sagitta_offset_safe(
+                radius=RDRIVE_OUTER_RADIUS,
+                chord=0,
+                angle_resolution=ANGLE_RESOLUTION,
+            ),
+            radius_outer=ZDRIVE_INNER_RADIUS
+            + gl.utils.sagitta_offset_safe(
+                radius=ZDRIVE_INNER_RADIUS,
+                chord=0,
+                angle_resolution=ANGLE_RESOLUTION,
+            ),
             angles=span,
             geometry_layer=LAYERS.DEVICE,
             angle_resolution=ANGLE_RESOLUTION,
@@ -581,7 +617,12 @@ def zr_connector() -> gf.Component:
     ref1.mirror_x(0)
 
     _ = c << gl.basic.ring(
-        radius_inner=RFLEX_ANCHOR_RADIUS1,
+        radius_inner=RFLEX_ANCHOR_RADIUS1
+        - gl.utils.sagitta_offset_safe(
+            radius=RFLEX_ANCHOR_RADIUS1,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        ),
         radius_outer=RDRIVE_OUTER_RADIUS,
         angles=(268, 272),
         geometry_layer=LAYERS.DEVICE,
@@ -599,8 +640,18 @@ def zr_connector() -> gf.Component:
     )
 
     _ = c << gl.basic.ring(
-        radius_inner=RDRIVE_OUTER_RADIUS,
-        radius_outer=ZDRIVE_INNER_RADIUS,
+        radius_inner=RDRIVE_OUTER_RADIUS
+        - gl.utils.sagitta_offset_safe(
+            radius=RDRIVE_OUTER_RADIUS,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        ),
+        radius_outer=ZDRIVE_INNER_RADIUS
+        + gl.utils.sagitta_offset_safe(
+            radius=ZDRIVE_INNER_RADIUS,
+            chord=0,
+            angle_resolution=ANGLE_RESOLUTION,
+        ),
         angles=(250, 255),
         geometry_layer=LAYERS.DEVICE,
         angle_resolution=ANGLE_RESOLUTION,
