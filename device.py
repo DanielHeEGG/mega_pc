@@ -6,11 +6,9 @@ import functools
 
 from pdk import LAYERS, PDK
 
-gf.clear_cache()
-
 PDK.activate()
 
-static_cell = functools.partial(gf.cell, set_name=False, check_instances=False)
+static_cell = functools.partial(gf.cell, check_instances=False)
 
 # GLOBAL CONSTANTS
 CHIP_SIZE = 8000
@@ -112,33 +110,15 @@ via = gl.basic.via(
 
 @static_cell
 def chip_border() -> gf.Component:
-    c = gf.Component(name="CHIP_BORDER")
+    c = gf.Component()
 
-    _ = c << gl.basic.rectangle_ring(
+    _ = c << gl.device.chip_border(
         size=(CHIP_SIZE, CHIP_SIZE),
         width=CHIP_BORDER_WIDTH,
         geometry_layer=LAYERS.DEVICE,
+        handle_layer=LAYERS.HANDLE_P7,
         centered=True,
         release_spec=RELEASE_SPEC,
-    )
-
-    _ = c << gl.basic.rectangle_ring(
-        size=(CHIP_SIZE, CHIP_SIZE),
-        width=0.5 * CHIP_SIZE - RDRIVE_OUTER_RADIUS,
-        geometry_layer=LAYERS.HANDLE,
-        centered=True,
-        release_spec=None,
-    )
-
-    _ = c << gl.basic.rectangle_ring(
-        size=(
-            CHIP_SIZE - 0.5 * CHIP_BORDER_WIDTH - 1.5 * CAVITY_WIDTH,
-            CHIP_SIZE - 0.5 * CHIP_BORDER_WIDTH - 1.5 * CAVITY_WIDTH,
-        ),
-        width=CAVITY_WIDTH,
-        geometry_layer=LAYERS.HANDLE_REMOVE,
-        centered=True,
-        release_spec=None,
     )
 
     pos = 2 * WIRE_BOND_SIZE + WIRE_BOND_OFFSET + CAVITY_WIDTH
@@ -157,7 +137,7 @@ def chip_border() -> gf.Component:
 
 @static_cell
 def center_carriage() -> gf.Component:
-    c = gf.Component(name="CENTER_CARRIAGE")
+    c = gf.Component()
 
     _ = c << gf.components.circle(
         radius=CENTER_CARRIAGE_RADIUS,
@@ -168,7 +148,7 @@ def center_carriage() -> gf.Component:
     _ = c << gf.components.circle(
         radius=CENTER_CARRIAGE_RADIUS,
         angle_resolution=ANGLE_RESOLUTION,
-        layer=LAYERS.HANDLE,
+        layer=LAYERS.HANDLE_P0,
     )
 
     _ = c << gf.components.circle(
@@ -221,7 +201,7 @@ def center_carriage() -> gf.Component:
 
 @static_cell
 def r_flexure_half() -> gf.Component:
-    c = gf.Component(name="R_FLEXURE_HALF")
+    c = gf.Component()
 
     _ = c << gl.flexure.butterfly(
         radius0=RFLEX_INNER_RADIUS0,
@@ -257,34 +237,7 @@ def r_flexure_half() -> gf.Component:
         radius_inner=RFLEX_ANCHOR_RADIUS0,
         radius_outer=RFLEX_ANCHOR_RADIUS1,
         angles=(-anchor_angle0, anchor_angle0),
-        geometry_layer=LAYERS.HANDLE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    _ = c << gl.basic.ring(
-        radius_inner=CENTER_CARRIAGE_RADIUS + CAVITY_WIDTH,
-        radius_outer=RFLEX_ANCHOR_RADIUS0 - CAVITY_WIDTH,
-        angles=(-90, 90),
-        geometry_layer=LAYERS.HANDLE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    _ = c << gl.basic.ring(
-        radius_inner=RFLEX_ANCHOR_RADIUS0 - CAVITY_WIDTH,
-        radius_outer=RFLEX_ANCHOR_RADIUS1 + CAVITY_WIDTH,
-        angles=(-90, -anchor_angle1),
-        geometry_layer=LAYERS.HANDLE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    _ = c << gl.basic.ring(
-        radius_inner=RFLEX_ANCHOR_RADIUS0 - CAVITY_WIDTH,
-        radius_outer=RFLEX_ANCHOR_RADIUS1 + CAVITY_WIDTH,
-        angles=(anchor_angle1, 90),
-        geometry_layer=LAYERS.HANDLE,
+        geometry_layer=LAYERS.HANDLE_P1,
         angle_resolution=ANGLE_RESOLUTION,
         release_spec=None,
     )
@@ -294,7 +247,7 @@ def r_flexure_half() -> gf.Component:
 
 @static_cell
 def r_drive_half() -> gf.Component:
-    c = gf.Component("R_DRIVE_HALF")
+    c = gf.Component()
 
     _ = c << gl.actuator.rotator_gear(
         radius_inner=RDRIVE_INNER_RADIUS,
@@ -338,9 +291,9 @@ def r_drive_half() -> gf.Component:
 
     _ = c << gl.basic.ring(
         radius_inner=RDRIVE_MID_RADIUS + 0.5 * CAVITY_WIDTH,
-        radius_outer=RDRIVE_OUTER_RADIUS,
+        radius_outer=ZDRIVE_OUTER_RADIUS,
         angles=(-90, 90),
-        geometry_layer=LAYERS.HANDLE,
+        geometry_layer=LAYERS.HANDLE_P1,
         angle_resolution=ANGLE_RESOLUTION,
         release_spec=None,
     )
@@ -349,7 +302,7 @@ def r_drive_half() -> gf.Component:
         radius_inner=RFLEX_ANCHOR_RADIUS1,
         radius_outer=RDRIVE_MID_RADIUS + 0.5 * CAVITY_WIDTH,
         angles=(-90, -0.5 * RDRIVE_ROTOR_SPAN),
-        geometry_layer=LAYERS.HANDLE,
+        geometry_layer=LAYERS.HANDLE_P1,
         angle_resolution=ANGLE_RESOLUTION,
         release_spec=None,
     )
@@ -358,19 +311,7 @@ def r_drive_half() -> gf.Component:
         radius_inner=RFLEX_ANCHOR_RADIUS1,
         radius_outer=RDRIVE_MID_RADIUS + 0.5 * CAVITY_WIDTH,
         angles=(0.5 * RDRIVE_ROTOR_SPAN, 90),
-        geometry_layer=LAYERS.HANDLE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    span_angle = 0.5 * RDRIVE_ROTOR_SPAN - CAVITY_WIDTH / RFLEX_ANCHOR_RADIUS1 / (
-        np.pi / 180
-    )
-    _ = c << gl.basic.ring(
-        radius_inner=RFLEX_ANCHOR_RADIUS1 + CAVITY_WIDTH,
-        radius_outer=RDRIVE_MID_RADIUS - 0.5 * CAVITY_WIDTH,
-        angles=(-span_angle, span_angle),
-        geometry_layer=LAYERS.HANDLE,
+        geometry_layer=LAYERS.HANDLE_P1,
         angle_resolution=ANGLE_RESOLUTION,
         release_spec=None,
     )
@@ -380,7 +321,7 @@ def r_drive_half() -> gf.Component:
 
 @static_cell
 def z_cant_half() -> gf.Component:
-    c = gf.Component("Z_CANT_HALF")
+    c = gf.Component()
 
     x0 = ZCANT_BEAM1_WIDTH - 0.5 * ZDRIVE_ANCHOR_SIZE
     x1 = 0.5 * (ZCANT_LENGTH1 + ZCANT_LENGTH2)
@@ -575,7 +516,7 @@ def z_cant_half() -> gf.Component:
 
 @static_cell
 def z_drive_half() -> gf.Component:
-    c = gf.Component("Z_DRIVE_HALF")
+    c = gf.Component()
 
     ring_angle = (
         (0.5 * ZCANT_WIDTH + ZCANT_BEAM1_LENGTH) / ZDRIVE_INNER_RADIUS / (np.pi / 180)
@@ -597,60 +538,26 @@ def z_drive_half() -> gf.Component:
 
 @static_cell
 def z_drive() -> gf.Component:
-    c = gf.Component("Z_DRIVE")
+    c = gf.Component()
 
     _ = c << z_drive_half()
     ref = c << z_drive_half()
     ref.mirror_y(0)
 
-    _ = c << gl.basic.ring(
-        radius_inner=RDRIVE_OUTER_RADIUS,
-        radius_outer=0.5 * CHIP_SIZE - CHIP_BORDER_WIDTH,
-        angles=(-45, 45),
-        geometry_layer=LAYERS.HANDLE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    ring_angle = 0.5 * ZCANT_WIDTH / ZDRIVE_OUTER_RADIUS / (np.pi / 180)
-    _ = c << gl.basic.ring(
-        radius_inner=ZDRIVE_OUTER_RADIUS - 0.5 * CAVITY_WIDTH,
-        radius_outer=ZDRIVE_OUTER_RADIUS + 0.5 * CAVITY_WIDTH,
-        angles=(ring_angle, 45),
-        geometry_layer=LAYERS.HANDLE_REMOVE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    _ = c << gl.basic.ring(
-        radius_inner=ZDRIVE_OUTER_RADIUS - 0.5 * CAVITY_WIDTH,
-        radius_outer=ZDRIVE_OUTER_RADIUS + 0.5 * CAVITY_WIDTH,
-        angles=(-45, -ring_angle),
-        geometry_layer=LAYERS.HANDLE_REMOVE,
-        angle_resolution=ANGLE_RESOLUTION,
-        release_spec=None,
-    )
-
-    rect_ring_ref = c << gl.basic.rectangle_ring(
-        size=(
-            ZCANT_LENGTH1 + ZCANT_LENGTH2 + 2 * CAVITY_WIDTH,
-            ZCANT_WIDTH + 2 * CAVITY_WIDTH,
-        ),
-        width=CAVITY_WIDTH,
-        geometry_layer=LAYERS.HANDLE_REMOVE,
+    rect_ref = c << gl.basic.rectangle(
+        size=(ZCANT_LENGTH1 + ZCANT_LENGTH2, ZCANT_WIDTH),
+        geometry_layer=LAYERS.HANDLE_P0,
         centered=False,
         release_spec=None,
     )
-    rect_ring_ref.move(
-        (ZDRIVE_INNER_RADIUS - CAVITY_WIDTH, -0.5 * ZCANT_WIDTH - CAVITY_WIDTH)
-    )
+    rect_ref.move((ZDRIVE_INNER_RADIUS, -0.5 * ZCANT_WIDTH))
 
     return c
 
 
 @static_cell
 def zr_connector_half() -> gf.Component:
-    c = gf.Component("ZR_CONNECTOR_HALF")
+    c = gf.Component()
 
     for span in ZR_CONNECTOR_SPANS:
         _ = c << gl.basic.ring(
@@ -667,7 +574,7 @@ def zr_connector_half() -> gf.Component:
 
 @static_cell
 def zr_connector() -> gf.Component:
-    c = gf.Component("ZR_CONNECTOR")
+    c = gf.Component()
 
     ref0 = c << zr_connector_half()
     ref1 = c << zr_connector_half()
@@ -715,7 +622,7 @@ def zr_connector() -> gf.Component:
 
 @static_cell
 def z_release_lock() -> gf.Component:
-    c = gf.Component("Z_RELEASE_LOCK")
+    c = gf.Component()
 
     angle = 0.5 * ZDRIVE_RING_SPAN + CAVITY_WIDTH / ZDRIVE_INNER_RADIUS / (np.pi / 180)
     middle_radius = 0.5 * (ZDRIVE_INNER_RADIUS + CHIP_BOND_RADIUS - CAVITY_WIDTH)
@@ -827,7 +734,7 @@ def cap_border_quarter() -> gf.Component:
 
 @static_cell
 def device() -> gf.Component:
-    c = gf.Component("CHIP")
+    c = gf.Component()
 
     chip_border_ref = c << chip_border()
 
