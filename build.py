@@ -1,5 +1,23 @@
 import gdsfactory as gf
 import gfelib as gl
+import sys
+import argparse
+
+parser = argparse.ArgumentParser(description="Build script for MEGA-PC")
+parser.add_argument(
+    "--nomerge",
+    action="store_true",
+    help="Don't merge the device patterns (e.g. release holes), because it can be very slow",
+)
+parser.add_argument(
+    "--show",
+    action="store_true",
+    help="Show the last pattern with KLayout",
+)
+
+
+args = parser.parse_args()
+
 
 gf.clear_cache()
 
@@ -14,30 +32,32 @@ CHIP_RECT = gf.components.rectangle(
     centered=True,
 )
 
-
 d = device()
 
 d.write_gds("./build/mega_pc_SOURCE.gds")
 
-
 c = gf.Component()
 
-# DEVICE
-_ = c << gf.boolean(
-    A=gf.boolean(
-        A=CHIP_RECT,
+if not args.nomerge:
+    # DEVICE merged
+    _ = c << gf.boolean(
+        A=gf.boolean(
+            A=CHIP_RECT,
+            B=d,
+            operation="-",
+            layer=LAYERS.DUMMY,
+            layer1=LAYERS.DUMMY,
+            layer2=LAYERS.DEVICE,
+        ),
         B=d,
-        operation="-",
-        layer=LAYERS.DUMMY,
+        operation="|",
+        layer=LAYERS.DEVICE_REMOVE,
         layer1=LAYERS.DUMMY,
-        layer2=LAYERS.DEVICE,
-    ),
-    B=d,
-    operation="|",
-    layer=LAYERS.DEVICE_REMOVE,
-    layer1=LAYERS.DUMMY,
-    layer2=LAYERS.DEVICE_REMOVE,
-)
+        layer2=LAYERS.DEVICE_REMOVE,
+    )
+else:
+    # DEVICE and DEVICE_REMOVE not merged
+    _ = c << d.extract(layers=[LAYERS.DEVICE, LAYERS.DEVICE_REMOVE])
 
 # HANDLE
 handle = gf.Component()
@@ -123,3 +143,6 @@ for layer in [
     )
 
 c.write_gds("./build/mega_pc_BUILD.gds")
+
+if args.show:
+    c.show()
