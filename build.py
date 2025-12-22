@@ -36,7 +36,7 @@ d = device()
 
 d.write_gds("./build/mega_pc_SOURCE.gds")
 
-c = gf.Component()
+c = gf.Component(name="chip")
 
 if not args.nomerge:
     # DEVICE merged
