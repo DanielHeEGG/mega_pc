@@ -20,7 +20,7 @@ CAVITY_WIDTH = 40
 RELEASE_SPEC = gl.datatypes.ReleaseSpec(
     hole_radius=3,
     distance=6,
-    angle_resolution=ANGLE_RESOLUTION,
+    angle_resolution=18,
     layer=LAYERS.DEVICE_REMOVE,
 )
 
