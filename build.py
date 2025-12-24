@@ -5,7 +5,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Build script for MEGA-PC")
 parser.add_argument(
-    "--nomerge",
+    "--no-merge",
     action="store_true",
     help="Don't merge the device patterns (e.g. release holes), because it can be very slow",
 )
@@ -38,7 +38,7 @@ d.write_gds("./build/mega_pc_SOURCE.gds")
 
 c = gf.Component(name="chip")
 
-if not args.nomerge:
+if not args.no_merge:
     # DEVICE merged
     _ = c << gf.boolean(
         A=gf.boolean(
