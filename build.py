@@ -1,6 +1,8 @@
 import gdsfactory as gf
+import gfebuild as gb
 import gfelib as gl
 import sys
+import datetime
 import argparse
 
 parser = argparse.ArgumentParser(description="Build script for MEGA-PC")
@@ -15,14 +17,14 @@ parser.add_argument(
     help="Show the last pattern with KLayout",
 )
 parser.add_argument(
-    "--add-version",
+    "--version",
     action="store",
     type=str,
     help="Add version number text",
-    default="",
+    required=True,
 )
 parser.add_argument(
-    "--add-hash",
+    "--hash",
     action="store",
     type=str,
     help="Add hash text",
@@ -46,9 +48,9 @@ CHIP_RECT = gf.components.rectangle(
     centered=True,
 )
 
-d = device(version=args.add_version, hash=args.add_hash)
+d = device(version=args.version, hash=args.hash)
 
-d.write_gds("./build/mega_pc_SOURCE.gds")
+d.write_gds(f"./build/mega_pc_{args.version}_SOURCE.gds")
 
 c = gf.Component(name="chip")
 
@@ -156,7 +158,31 @@ for layer in [
         layer2=layer,
     )
 
-c.write_gds("./build/mega_pc_BUILD.gds")
+c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds")
+
+reticles, placements = gb.asml300.reticle(
+    component=c,
+    image_size=(CHIP_SIZE, CHIP_SIZE),
+    image_layers=[
+        LAYERS.VIAS_ETCH,
+        LAYERS.POLY,
+        LAYERS.OXIDE,
+        LAYERS.NITRIDE,
+        LAYERS.DEVICE_REMOVE,
+        LAYERS.CAP_OXIDE,
+        LAYERS.CAP_NITRIDE,
+        LAYERS.CAP_TRENCH_ETCH,
+    ],
+    id=f"MPC-{args.version}",
+    text=str(datetime.date.today()),
+)
+
+for i, reticle in enumerate(reticles):
+    reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
+
+with open(f"./build/mega_pc_{args.version}_BUILD_ASML_PLACEMENTS.txt", "w") as f:
+    for key, value in placements.items():
+        f.write(f"{LAYERS(key)}: R {value[0]}, CX {value[1]:.2f}, CY {value[2]:.2f}\n")
 
 if args.show:
     c.show()
