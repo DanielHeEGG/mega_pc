@@ -14,6 +14,20 @@ parser.add_argument(
     action="store_true",
     help="Show the last pattern with KLayout",
 )
+parser.add_argument(
+    "--add-version",
+    action="store",
+    type=str,
+    help="Add version number text",
+    default="",
+)
+parser.add_argument(
+    "--add-hash",
+    action="store",
+    type=str,
+    help="Add hash text",
+    default="",
+)
 
 
 args = parser.parse_args()
@@ -32,7 +46,7 @@ CHIP_RECT = gf.components.rectangle(
     centered=True,
 )
 
-d = device()
+d = device(version=args.add_version, hash=args.add_hash)
 
 d.write_gds("./build/mega_pc_SOURCE.gds")
 

@@ -1,5 +1,6 @@
 import gdsfactory as gf
 import gfelib as gl
+import klayout
 
 import numpy as np
 import functools
@@ -793,7 +794,7 @@ def cap_border_quarter() -> gf.Component:
 
 
 @static_cell
-def device() -> gf.Component:
+def device(version: str, hash: str) -> gf.Component:
     c = gf.Component()
 
     chip_border_ref = c << chip_border()
@@ -825,5 +826,47 @@ def device() -> gf.Component:
         cap_border_quarter_ref.rotate(angle=r, center=(0, 0))
 
     zr_connector_ref = c << zr_connector()
+
+    # texts, logos, and easter eggs
+    pos = 2 * WIRE_BOND_SIZE + WIRE_BOND_OFFSET + CAVITY_WIDTH
+    size = 0.5 * CHIP_SIZE - CHIP_BORDER_WIDTH - pos - CAVITY_WIDTH
+
+    _ = c << gf.components.text(
+        text="MEGA-PC\nDaniel He\nCao Lab\nEECS\nUC Berkeley",
+        size=0.1 * size,
+        position=(-pos - 0.5 * size, -pos - 0.25 * size),
+        justify="center",
+        layer=LAYERS.DEVICE_REMOVE,
+    )
+
+    _ = c << gf.components.text(
+        text=f"{version}\n{hash[:7]}",
+        size=0.1 * size,
+        position=(-pos - 0.5 * size, pos + 0.5 * size),
+        justify="center",
+        layer=LAYERS.DEVICE_REMOVE,
+    )
+
+    symbol_cal = gf.import_gds(
+        "lib/gdslib_fun_symbols/main.gds", "CAL_LOGO"
+    ).remap_layers({(0, 0): LAYERS.DEVICE_REMOVE})
+    symbol_cal.transform(
+        klayout.dbcore.DCplxTrans(
+            mag=0.06 * size,
+        )
+    )
+    symbol_cal_ref = c << symbol_cal
+    symbol_cal_ref.move((pos + 0.5 * size, -pos - 0.5 * size))
+
+    symbol_eye = gf.import_gds(
+        "lib/gdslib_fun_symbols/main.gds", "EYE_OF_THE_UNIVERSE"
+    ).remap_layers({(0, 0): LAYERS.DEVICE_REMOVE})
+    symbol_eye.transform(
+        klayout.dbcore.DCplxTrans(
+            mag=0.08 * size,
+        )
+    )
+    symbol_eye_ref = c << symbol_eye
+    symbol_eye_ref.move((pos + 0.5 * size, pos + 0.5 * size))
 
     return c
