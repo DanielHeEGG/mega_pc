@@ -1,0 +1,35 @@
+name: Build and Release
+on:
+    push:
+        tags:
+            - "*"
+            - "**"
+
+permissions:
+    contents: write
+
+jobs:
+    build-and-release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                submodules: recursive
+            - uses: actions/setup-python@v6
+              with:
+                python-version: "3.13"
+            - run: pip install -r requirements.txt
+            - run: python build.py --add-version ${{ github.ref_name }} --add-hash ${{ github.sha }}
+            - run: cp "./build/mega_pc_SOURCE.gds" "./mega_pc_SOURCE_${{ github.ref_name }}.gds"
+            - run: cp "./build/mega_pc_BUILD.gds" "./mega_pc_BUILD_${{ github.ref_name }}.gds"
+            - uses: softprops/action-gh-release@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ github.ref_name }}
+                  name: Release ${{ github.ref_name }}
+                  draft: false
+                  prerelease: false
+                  files: |
+                    ./mega_pc_SOURCE_${{ github.ref_name }}.gds
+                    ./mega_pc_BUILD_${{ github.ref_name }}.gds
