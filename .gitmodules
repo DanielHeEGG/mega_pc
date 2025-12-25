@@ -4,3 +4,6 @@
 [submodule "lib/gfelib"]
 	path = lib/gfelib
 	url = https://github.com/DanielHeEGG/gfelib
+[submodule "lib/gfebuild"]
+	path = lib/gfebuild
+	url = https://github.com/DanielHeEGG/gfebuild
