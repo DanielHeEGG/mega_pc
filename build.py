@@ -158,6 +158,7 @@ for layer in [
         layer2=layer,
     )
 
+c.flatten()
 c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds")
 
 reticles, placements = gb.asml300.reticle(
