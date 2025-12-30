@@ -19,7 +19,7 @@ jobs:
               with:
                 python-version: "3.13"
             - run: pip install -r requirements.txt
-            - run: python build.py --version ${{ github.ref_name }} --hash ${{ github.sha }}
+            - run: python build.py --version ${{ github.ref_name }} --hash ${{ github.sha }} --mirror
             - uses: softprops/action-gh-release@v2
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,3 +34,5 @@ jobs:
                     ./build/mega_pc_${{ github.ref_name }}_BUILD_ASML_0.gds
                     ./build/mega_pc_${{ github.ref_name }}_BUILD_ASML_1.gds
                     ./build/mega_pc_${{ github.ref_name }}_BUILD_ASML_PLACEMENTS.txt
+                    ./build/mega_pc_${{ github.ref_name }}_BUILD_ASML_0_MIRROR.gds
+                    ./build/mega_pc_${{ github.ref_name }}_BUILD_ASML_1_MIRROR.gds

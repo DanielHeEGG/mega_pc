@@ -12,6 +12,11 @@ parser.add_argument(
     help="Don't merge the device patterns (e.g. release holes), because it can be very slow",
 )
 parser.add_argument(
+    "--mirror",
+    action="store_true",
+    help="Write additional ASML reticle files that are mirrored across x=0 (PLACEMENTS file is not mirrored)",
+)
+parser.add_argument(
     "--show",
     action="store_true",
     help="Show the last pattern with KLayout",
@@ -180,6 +185,10 @@ reticles, placements = gb.asml300.reticle(
 
 for i, reticle in enumerate(reticles):
     reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
+
+    if args.mirror:
+        reticle.mirror_x(0)
+        reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}_MIRROR.gds")
 
 with open(f"./build/mega_pc_{args.version}_BUILD_ASML_PLACEMENTS.txt", "w") as f:
     for key, value in placements.items():
