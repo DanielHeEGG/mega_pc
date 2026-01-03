@@ -74,6 +74,13 @@ ZCANT_STUB_WIDTH = 40
 ZCANT_STUB_INSET = 70
 ZCANT_STUB_ANCHOR_SIZE = 250
 
+Z_CANT_BEAM_SPEC = gl.datatypes.BeamSpec(
+    handle_etch_length=(0, 1.2),
+    handle_etch_width=(0, 5),
+    handle_etch_offset=(0, 0),
+    handle_etch_layer=LAYERS.HANDLE_REMOVE,
+)
+
 ZACTUATOR_WIDTH = 2800
 ZACTUATOR_LENGTH = 700
 ZACTUATOR_LENGTH_STEP = 5
@@ -362,7 +369,7 @@ def z_cant_half() -> gf.Component:
         inset_y=(0, 0),
         isolation_x=(0, 0),
         isolation_y=(0, 0),
-        spec=None,
+        spec=Z_CANT_BEAM_SPEC,
     )
 
     cant_beam1 = gl.flexure.ZCantileverBeam(
@@ -387,7 +394,7 @@ def z_cant_half() -> gf.Component:
         inset_y=(0, 0),
         isolation_x=(0, 0),
         isolation_y=(0, 0),
-        spec=None,
+        spec=Z_CANT_BEAM_SPEC,
     )
 
     cant_beam3 = gl.flexure.ZCantileverBeam(
@@ -404,7 +411,7 @@ def z_cant_half() -> gf.Component:
             0,
         ),
         isolation_y=(0.5 * ZCANT_WIDTH, 0),
-        spec=None,
+        spec=Z_CANT_BEAM_SPEC,
     )
 
     _ = c << gl.flexure.z_cantilever_half(
