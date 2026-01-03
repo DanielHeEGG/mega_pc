@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description="Build script for MEGA-PC")
 parser.add_argument(
     "--no-merge",
     action="store_true",
-    help="Don't merge the device patterns (e.g. release holes), because it can be very slow",
+    help="Don't merge the device patterns (e.g. release holes), because it can be very slow. For debug use only, ASML reticle files will not be generated",
 )
 parser.add_argument(
     "--mirror",
@@ -166,33 +166,38 @@ for layer in [
 c.flatten()
 c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds")
 
-reticles, placements = gb.asml300.reticle(
-    component=c,
-    image_size=(CHIP_SIZE, CHIP_SIZE),
-    image_layers=[
-        LAYERS.VIAS_ETCH,
-        LAYERS.POLY,
-        LAYERS.OXIDE,
-        LAYERS.NITRIDE,
-        LAYERS.DEVICE_REMOVE,
-        LAYERS.CAP_OXIDE,
-        LAYERS.CAP_NITRIDE,
-        LAYERS.CAP_TRENCH_ETCH,
-    ],
-    id=f"MPC-{args.version}",
-    text=str(datetime.date.today()),
-)
+if not args.no_merge:
+    reticles, placements = gb.asml300.reticle(
+        component=c,
+        image_size=(CHIP_SIZE, CHIP_SIZE),
+        image_layers=[
+            LAYERS.VIAS_ETCH,
+            LAYERS.POLY,
+            LAYERS.OXIDE,
+            LAYERS.NITRIDE,
+            LAYERS.DEVICE_REMOVE,
+            LAYERS.CAP_OXIDE,
+            LAYERS.CAP_NITRIDE,
+            LAYERS.CAP_TRENCH_ETCH,
+        ],
+        id=f"MPC-{args.version}",
+        text=str(datetime.date.today()),
+    )
 
-for i, reticle in enumerate(reticles):
-    reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
+    for i, reticle in enumerate(reticles):
+        reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
 
-    if args.mirror:
-        reticle.mirror_x(0)
-        reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}_MIRROR.gds")
+        if args.mirror:
+            reticle.mirror_x(0)
+            reticle.write_gds(
+                f"./build/mega_pc_{args.version}_BUILD_ASML_{i}_MIRROR.gds"
+            )
 
-with open(f"./build/mega_pc_{args.version}_BUILD_ASML_PLACEMENTS.txt", "w") as f:
-    for key, value in placements.items():
-        f.write(f"{LAYERS(key)}: R {value[0]}, CX {value[1]:.2f}, CY {value[2]:.2f}\n")
+    with open(f"./build/mega_pc_{args.version}_BUILD_ASML_PLACEMENTS.txt", "w") as f:
+        for key, value in placements.items():
+            f.write(
+                f"{LAYERS(key)}: R {value[0]}, CX {value[1]:.2f}, CY {value[2]:.2f}\n"
+            )
 
 if args.show:
     c.show()
