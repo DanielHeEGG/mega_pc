@@ -56,7 +56,7 @@ RDRIVE_ROTOR_SPAN = 160
 
 ZDRIVE_CLEARANCE = 8
 ZDRIVE_INNER_RADIUS = 2250
-ZDRIVE_OUTER_RADIUS = 2500
+ZDRIVE_OUTER_RADIUS = 2450
 ZDRIVE_RING_SPAN = 60
 ZDRIVE_ANCHOR_SIZE = 120
 
@@ -70,7 +70,6 @@ ZCANT_BEAM1_LENGTH = 100
 ZCANT_BEAM2_WIDTH = 4
 ZCANT_BEAM2_LENGTH = 150
 ZCANT_BEAM2_INSET = 230
-ZCANT_STUB_POSITION = 0.6
 ZCANT_STUB_WIDTH = 40
 ZCANT_STUB_INSET = 70
 ZCANT_STUB_ANCHOR_SIZE = 250
@@ -369,7 +368,10 @@ def z_cant_half() -> gf.Component:
     cant_beam1 = gl.flexure.ZCantileverBeam(
         length=ZCANT_STUB_INSET + ZDRIVE_CLEARANCE,
         width=ZCANT_STUB_WIDTH,
-        position=(0, ZCANT_STUB_POSITION),
+        position=(
+            0.5 * CAP_CHIP_SIZE + 0.5 * ZCANT_STUB_ANCHOR_SIZE - ZDRIVE_INNER_RADIUS,
+            0,
+        ),
         inset_x=(ZCANT_STUB_WIDTH, 0),
         inset_y=(ZCANT_STUB_INSET, 0),
         isolation_x=(ZCANT_STUB_WIDTH, 0),
@@ -446,9 +448,17 @@ def z_cant_half() -> gf.Component:
     anchor2_ref.move((total_length - ZACTUATOR_BEAM_WIDTH, anchor2_y))
 
     stub_anchor_x = cant_beam1.get_position(total_length)
-    stub_anchor_y = 0.5 * ZCANT_WIDTH + ZDRIVE_CLEARANCE + 0.5 * ZCANT_STUB_ANCHOR_SIZE
+    stub_anchor_y = 0.5 * (
+        0.5 * ZCANT_WIDTH + ZDRIVE_CLEARANCE + WIRE_BOND_OFFSET - ZCANT_STUB_ANCHOR_SIZE
+    )
     stub_anchor_ref = c << gf.components.rectangle(
-        size=(ZCANT_STUB_ANCHOR_SIZE, ZCANT_STUB_ANCHOR_SIZE),
+        size=(
+            ZCANT_STUB_ANCHOR_SIZE,
+            WIRE_BOND_OFFSET
+            - ZCANT_STUB_ANCHOR_SIZE
+            - 0.5 * ZCANT_WIDTH
+            - ZDRIVE_CLEARANCE,
+        ),
         layer=LAYERS.DEVICE,
         centered=True,
     )
