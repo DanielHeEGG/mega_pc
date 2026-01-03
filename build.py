@@ -124,7 +124,7 @@ for i in range(7, -1, -1):
 _ = c << gf.boolean(
     A=handle,
     B=d,
-    operation="-",
+    operation="|",
     layer=LAYERS.HANDLE_REMOVE,
     layer1=LAYERS.DUMMY,
     layer2=LAYERS.HANDLE_REMOVE,
