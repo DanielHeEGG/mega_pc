@@ -36,6 +36,7 @@ RFLEX_ANCHOR_RADIUS0 = 1600
 RFLEX_ANCHOR_RADIUS1 = 1680
 RFLEX_BEAM_WIDTH = 3.5
 RFLEX_BEAM_SPEC = gl.datatypes.BeamSpec(
+    release_thick=True,
     thick_length=(0, 0.8),
     thick_width=(40, 0),
     thick_offset=(0, 0),
@@ -62,10 +63,14 @@ ZDRIVE_ANCHOR_SIZE = 120
 ZCANT_WIDTH = 600
 ZCANT_LENGTH1 = 600
 ZCANT_LENGTH2 = 100
+ZCANT_BEAM0_WIDTH = 5
+ZCANT_BEAM0_LENGTH = 100
 ZCANT_BEAM1_WIDTH = 5
 ZCANT_BEAM1_LENGTH = 100
-ZCANT_BEAM2_WIDTH = 5
-ZCANT_BEAM2_LENGTH = 100
+ZCANT_BEAM2_WIDTH = 4
+ZCANT_BEAM2_LENGTH = 150
+ZCANT_BEAM2_INSET = 230
+ZCANT_STUB_POSITION = 0.6
 ZCANT_STUB_WIDTH = 40
 ZCANT_STUB_INSET = 70
 ZCANT_STUB_ANCHOR_SIZE = 250
@@ -73,10 +78,8 @@ ZCANT_STUB_ANCHOR_SIZE = 250
 ZACTUATOR_WIDTH = 2800
 ZACTUATOR_LENGTH = 700
 ZACTUATOR_LENGTH_STEP = 5
-ZACTUATOR_BEAM1_WIDTH = 4
-ZACTUATOR_BEAM1_LENGTH = 150
-ZACTUATOR_BEAM2_WIDTH = 4
-ZACTUATOR_BEAM2_LENGTH = 40
+ZACTUATOR_BEAM_WIDTH = 4
+ZACTUATOR_BEAM_LENGTH = 40
 
 ZR_CONNECTOR_SPANS = [
     (-30, -25),
@@ -350,125 +353,118 @@ def r_drive_half() -> gf.Component:
 def z_cant_half() -> gf.Component:
     c = gf.Component()
 
-    x0 = ZCANT_BEAM1_WIDTH - 0.5 * ZDRIVE_ANCHOR_SIZE
-    x1 = 0.5 * (ZCANT_LENGTH1 + ZCANT_LENGTH2)
-    x2 = x1 + ZDRIVE_CLEARANCE + 0.5 * ZCANT_STUB_WIDTH - 0.5 * ZCANT_STUB_ANCHOR_SIZE
-    x3 = x1 + 2 * ZDRIVE_CLEARANCE + ZCANT_STUB_WIDTH
-    x4 = ZCANT_LENGTH1
-    x5 = x4 + ZCANT_LENGTH2
-    x6 = x5 + 0.5 * ZDRIVE_ANCHOR_SIZE - ZACTUATOR_BEAM1_WIDTH
-    x7 = x6 + ZACTUATOR_LENGTH - ZDRIVE_ANCHOR_SIZE - ZDRIVE_CLEARANCE
-    x8 = x6 + ZACTUATOR_LENGTH - 0.5 * ZDRIVE_ANCHOR_SIZE - 0.5 * ZACTUATOR_BEAM2_WIDTH
+    total_length = ZCANT_LENGTH1 + ZCANT_LENGTH2
 
-    y0 = 0.5 * ZDRIVE_CLEARANCE
-    y1 = (
-        0.5 * ZCANT_WIDTH
-        + ZCANT_BEAM2_LENGTH
-        - 1.5 * ZDRIVE_ANCHOR_SIZE
-        - ZACTUATOR_BEAM1_LENGTH
+    cant_beam0 = gl.flexure.ZCantileverBeam(
+        length=ZCANT_BEAM0_LENGTH,
+        width=ZCANT_BEAM0_WIDTH,
+        position=(0.5 * ZCANT_BEAM0_WIDTH, 0),
+        inset_x=(0, 0),
+        inset_y=(0, 0),
+        isolation_x=(0, 0),
+        isolation_y=(0, 0),
+        spec=None,
     )
-    y2 = 0.5 * ZCANT_WIDTH - ZCANT_STUB_INSET
-    y3 = 0.5 * ZCANT_WIDTH
-    y4 = y3 + ZDRIVE_CLEARANCE
-    y5 = y3 + ZCANT_BEAM1_LENGTH
-    y6 = ZDRIVE_ANCHOR_SIZE
-    y7 = y6 + ZACTUATOR_BEAM2_LENGTH
-    y8 = 0.5 * ZACTUATOR_WIDTH
-    y9 = 0.5 * ZACTUATOR_WIDTH + ZACTUATOR_BEAM2_LENGTH
 
-    rect0_ref = c << gf.components.rectangle(
-        size=(x1, y3 - y0),
-        layer=LAYERS.DEVICE,
-        centered=False,
+    cant_beam1 = gl.flexure.ZCantileverBeam(
+        length=ZCANT_STUB_INSET + ZDRIVE_CLEARANCE,
+        width=ZCANT_STUB_WIDTH,
+        position=(0, ZCANT_STUB_POSITION),
+        inset_x=(ZCANT_STUB_WIDTH, 0),
+        inset_y=(ZCANT_STUB_INSET, 0),
+        isolation_x=(ZCANT_STUB_WIDTH, 0),
+        isolation_y=(ZCANT_STUB_INSET, 0),
+        spec=gl.datatypes.BeamSpec(release_thin=True),
     )
-    rect0_ref.movey(y0)
 
-    rect1_ref = c << gf.components.rectangle(
-        size=(x3 - x1, y2 - y1 - ZDRIVE_CLEARANCE),
-        layer=LAYERS.DEVICE,
-        centered=False,
+    cant_beam2 = gl.flexure.ZCantileverBeam(
+        length=ZCANT_BEAM1_LENGTH,
+        width=ZCANT_BEAM1_WIDTH,
+        position=(ZCANT_LENGTH1, 0),
+        inset_x=(0, 0),
+        inset_y=(0, 0),
+        isolation_x=(0, 0),
+        isolation_y=(0, 0),
+        spec=None,
     )
-    rect1_ref.move((x1, y1 + ZDRIVE_CLEARANCE))
 
-    rect2_ref = c << gf.components.rectangle(
-        size=(x4 - x3, y3 - y1 - ZDRIVE_CLEARANCE),
-        layer=LAYERS.DEVICE,
-        centered=False,
+    cant_beam3 = gl.flexure.ZCantileverBeam(
+        length=ZCANT_BEAM2_LENGTH,
+        width=ZCANT_BEAM2_WIDTH,
+        position=(-0.5 * ZCANT_BEAM2_WIDTH, 1),
+        inset_x=(2 * ZCANT_LENGTH2 - ZCANT_BEAM1_WIDTH - ZCANT_BEAM2_WIDTH, 0),
+        inset_y=(ZCANT_BEAM2_INSET, 0),
+        isolation_x=(
+            2 * ZCANT_LENGTH2
+            - ZCANT_BEAM1_WIDTH
+            - ZCANT_BEAM2_WIDTH
+            - 2 * ZDRIVE_CLEARANCE,
+            0,
+        ),
+        isolation_y=(0.5 * ZCANT_WIDTH, 0),
+        spec=None,
     )
-    rect2_ref.move((x3, y1 + ZDRIVE_CLEARANCE))
 
-    rect3_ref = c << gf.components.rectangle(
-        size=(x5 - x1 - ZDRIVE_CLEARANCE, y1),
-        layer=LAYERS.DEVICE,
-        centered=False,
-    )
-    rect3_ref.movex(x1 + ZDRIVE_CLEARANCE)
-
-    stub_ref = c << gl.basic.rectangle(
-        size=(ZCANT_STUB_WIDTH, ZCANT_STUB_INSET),
+    _ = c << gl.flexure.z_cantilever_half(
+        length=total_length,
+        width=ZCANT_WIDTH,
+        beams=[cant_beam0, cant_beam1, cant_beam2, cant_beam3],
+        clearance=ZDRIVE_CLEARANCE,
+        middle_split=True,
         geometry_layer=LAYERS.DEVICE,
-        centered=False,
+        handle_layer=LAYERS.HANDLE_P0,
         release_spec=RELEASE_SPEC,
     )
-    stub_ref.move((x1 + ZDRIVE_CLEARANCE, y2 + ZDRIVE_CLEARANCE))
-
-    stub_anchor_ref = c << gf.components.rectangle(
-        size=(ZCANT_STUB_ANCHOR_SIZE, ZCANT_STUB_ANCHOR_SIZE),
-        layer=LAYERS.DEVICE,
-        centered=False,
-    )
-    stub_anchor_ref.move((x2, y4))
-
-    via_ref = c << via
-    via_ref.move((x2 + 0.5 * ZCANT_STUB_ANCHOR_SIZE, y4 + 0.5 * ZCANT_STUB_ANCHOR_SIZE))
-
-    beam0_ref = c << gf.components.rectangle(
-        size=(ZCANT_BEAM1_WIDTH, ZCANT_BEAM1_LENGTH),
-        layer=LAYERS.DEVICE,
-        centered=False,
-    )
-    beam0_ref.movey(y3)
-
-    beam1_ref = c << gf.components.rectangle(
-        size=(ZCANT_BEAM2_WIDTH, ZCANT_BEAM2_LENGTH),
-        layer=LAYERS.DEVICE,
-        centered=False,
-    )
-    beam1_ref.move((x4 - ZCANT_BEAM2_WIDTH, y3))
 
     anchor0_ref = c << gf.components.rectangle(
         size=(0.5 * ZDRIVE_ANCHOR_SIZE, ZDRIVE_ANCHOR_SIZE),
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    anchor0_ref.move((x0, y5))
+    anchor0_ref.move(
+        (
+            ZCANT_BEAM0_WIDTH - 0.5 * ZDRIVE_ANCHOR_SIZE,
+            0.5 * ZCANT_WIDTH + ZCANT_BEAM0_LENGTH,
+        )
+    )
 
+    anchor1_y = 0.5 * ZCANT_WIDTH + ZCANT_BEAM1_LENGTH
     anchor1_ref = c << gf.components.rectangle(
-        size=(ZDRIVE_ANCHOR_SIZE, WIRE_BOND_OFFSET - y5),
+        size=(ZDRIVE_ANCHOR_SIZE, WIRE_BOND_OFFSET - anchor1_y),
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    anchor1_ref.move((x4 - ZCANT_BEAM2_WIDTH, y5))
+    anchor1_ref.move((ZCANT_LENGTH1 - ZCANT_BEAM1_WIDTH, anchor1_y))
 
-    beam2_ref = c << gf.components.rectangle(
-        size=(ZACTUATOR_BEAM1_WIDTH, ZACTUATOR_BEAM1_LENGTH),
-        layer=LAYERS.DEVICE,
-        centered=False,
-    )
-    beam2_ref.move((x5 - ZACTUATOR_BEAM1_WIDTH, y1))
-
+    anchor2_y = 0.5 * ZCANT_WIDTH - ZCANT_BEAM2_INSET + ZCANT_BEAM2_LENGTH
     anchor2_ref = c << gl.basic.rectangle(
         size=(0.5 * ZDRIVE_ANCHOR_SIZE, ZDRIVE_ANCHOR_SIZE),
         geometry_layer=LAYERS.DEVICE,
         centered=False,
         release_spec=RELEASE_SPEC,
     )
-    anchor2_ref.move((x5 - ZACTUATOR_BEAM1_WIDTH, y1 + ZACTUATOR_BEAM1_LENGTH))
+    anchor2_ref.move((total_length - ZACTUATOR_BEAM_WIDTH, anchor2_y))
 
-    x_size = (x7 - x6) / ZACTUATOR_LENGTH_STEP
+    stub_anchor_x = cant_beam1.get_position(total_length)
+    stub_anchor_y = 0.5 * ZCANT_WIDTH + ZDRIVE_CLEARANCE + 0.5 * ZCANT_STUB_ANCHOR_SIZE
+    stub_anchor_ref = c << gf.components.rectangle(
+        size=(ZCANT_STUB_ANCHOR_SIZE, ZCANT_STUB_ANCHOR_SIZE),
+        layer=LAYERS.DEVICE,
+        centered=True,
+    )
+    stub_anchor_ref.move((stub_anchor_x, stub_anchor_y))
+
+    via_ref = c << via
+    via_ref.move((stub_anchor_x, stub_anchor_y))
+
+    x_start = total_length + 0.5 * ZDRIVE_ANCHOR_SIZE - ZCANT_BEAM2_WIDTH
+    x_end = x_start + ZACTUATOR_LENGTH - ZDRIVE_ANCHOR_SIZE - ZDRIVE_CLEARANCE
+    x_size = (x_end - x_start) / ZACTUATOR_LENGTH_STEP
     for x, y in zip(
-        np.linspace(x6, x7 - x_size, ZACTUATOR_LENGTH_STEP),
-        np.linspace(y5, 0.5 * ZACTUATOR_WIDTH, ZACTUATOR_LENGTH_STEP),
+        np.linspace(x_start, x_end - x_size, ZACTUATOR_LENGTH_STEP),
+        np.linspace(
+            anchor2_y + ZDRIVE_ANCHOR_SIZE, 0.5 * ZACTUATOR_WIDTH, ZACTUATOR_LENGTH_STEP
+        ),
     ):
         rect_ref = c << gl.basic.rectangle(
             size=(x_size, y),
@@ -478,41 +474,49 @@ def z_cant_half() -> gf.Component:
         )
         rect_ref.movex(x)
 
+    zactuator_anchor_x = x_end + ZDRIVE_CLEARANCE
+    zactuator_beam_x = (
+        zactuator_anchor_x + 0.5 * ZDRIVE_ANCHOR_SIZE - 0.5 * ZACTUATOR_BEAM_WIDTH
+    )
     anchor3_ref = c << gf.components.rectangle(
         size=(ZDRIVE_ANCHOR_SIZE, ZDRIVE_ANCHOR_SIZE),
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    anchor3_ref.movex(x7 + ZDRIVE_CLEARANCE)
+    anchor3_ref.movex(zactuator_anchor_x)
 
     beam3_ref = c << gf.components.rectangle(
-        size=(ZACTUATOR_BEAM2_WIDTH, ZACTUATOR_BEAM2_LENGTH),
+        size=(ZACTUATOR_BEAM_WIDTH, ZACTUATOR_BEAM_LENGTH),
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    beam3_ref.move((x8, y6))
+    beam3_ref.move((zactuator_beam_x, ZDRIVE_ANCHOR_SIZE))
 
-    rect4_ref = c << gl.basic.rectangle(
-        size=(ZDRIVE_ANCHOR_SIZE + ZDRIVE_CLEARANCE, y8 - y7),
+    rect_ref = c << gl.basic.rectangle(
+        size=(
+            ZDRIVE_ANCHOR_SIZE + ZDRIVE_CLEARANCE,
+            0.5 * ZACTUATOR_WIDTH - ZDRIVE_ANCHOR_SIZE - ZACTUATOR_BEAM_LENGTH,
+        ),
         geometry_layer=LAYERS.DEVICE,
         centered=False,
         release_spec=RELEASE_SPEC,
     )
-    rect4_ref.move((x7, y7))
+    rect_ref.move((x_end, ZDRIVE_ANCHOR_SIZE + ZACTUATOR_BEAM_LENGTH))
 
     beam4_ref = c << gf.components.rectangle(
-        size=(ZACTUATOR_BEAM2_WIDTH, ZACTUATOR_BEAM2_LENGTH),
+        size=(ZACTUATOR_BEAM_WIDTH, ZACTUATOR_BEAM_LENGTH),
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    beam4_ref.move((x8, y8))
+    beam4_ref.move((zactuator_beam_x, 0.5 * ZACTUATOR_WIDTH))
 
+    zactuator_anchor4_y = 0.5 * ZACTUATOR_WIDTH + ZACTUATOR_BEAM_LENGTH
     anchor4_ref = c << gf.components.rectangle(
-        size=(ZDRIVE_ANCHOR_SIZE, WIRE_BOND_OFFSET - y9),
+        size=(ZDRIVE_ANCHOR_SIZE, WIRE_BOND_OFFSET - zactuator_anchor4_y),
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    anchor4_ref.move((x7 + ZDRIVE_CLEARANCE, y9))
+    anchor4_ref.move((zactuator_anchor_x, zactuator_anchor4_y))
 
     wire_bond0_ref = c << gf.components.rectangle(
         size=(WIRE_BOND_SIZE, WIRE_BOND_SIZE),
@@ -521,7 +525,10 @@ def z_cant_half() -> gf.Component:
     )
     wire_bond0_ref.move(
         (
-            x4 - ZCANT_BEAM2_WIDTH - 0.5 * WIRE_BOND_SIZE + 0.5 * ZDRIVE_ANCHOR_SIZE,
+            ZCANT_LENGTH1
+            - ZCANT_BEAM1_WIDTH
+            - 0.5 * WIRE_BOND_SIZE
+            + 0.5 * ZDRIVE_ANCHOR_SIZE,
             WIRE_BOND_OFFSET,
         )
     )
@@ -533,7 +540,7 @@ def z_cant_half() -> gf.Component:
     )
     wire_bond1_ref.move(
         (
-            x7 + ZDRIVE_CLEARANCE - WIRE_BOND_SIZE + ZDRIVE_ANCHOR_SIZE,
+            x_end + ZDRIVE_CLEARANCE - WIRE_BOND_SIZE + ZDRIVE_ANCHOR_SIZE,
             WIRE_BOND_OFFSET,
         )
     )
@@ -546,7 +553,7 @@ def z_drive_half() -> gf.Component:
     c = gf.Component()
 
     ring_angle = (
-        (0.5 * ZCANT_WIDTH + ZCANT_BEAM1_LENGTH) / ZDRIVE_INNER_RADIUS / (np.pi / 180)
+        (0.5 * ZCANT_WIDTH + ZCANT_BEAM0_LENGTH) / ZDRIVE_INNER_RADIUS / (np.pi / 180)
     )
     _ = c << gl.basic.ring(
         radius_inner=ZDRIVE_INNER_RADIUS,
