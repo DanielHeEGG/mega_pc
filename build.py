@@ -39,6 +39,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+date_str = str(datetime.date.today())
+
 
 gf.clear_cache()
 
@@ -53,7 +55,7 @@ CHIP_RECT = gf.components.rectangle(
     centered=True,
 )
 
-d = device(version=args.version, hash=args.hash)
+d = device(text=f"{args.version}\n{args.hash[:7]}\n{date_str}")
 
 d.write_gds(f"./build/mega_pc_{args.version}_SOURCE.gds")
 
@@ -181,7 +183,7 @@ if not args.no_merge:
             LAYERS.CAP_TRENCH_ETCH,
         ],
         id=f"MPC-{args.version}",
-        text=str(datetime.date.today()),
+        text=date_str,
     )
 
     for i, reticle in enumerate(reticles):

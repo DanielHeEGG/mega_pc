@@ -813,7 +813,7 @@ def cap_border_quarter() -> gf.Component:
 
 
 @static_cell
-def device(version: str, hash: str) -> gf.Component:
+def device(text: str) -> gf.Component:
     c = gf.Component()
 
     chip_border_ref = c << chip_border()
@@ -859,9 +859,12 @@ def device(version: str, hash: str) -> gf.Component:
     )
 
     _ = c << gf.components.text(
-        text=f"{version}\n{hash[:7]}",
+        text=text,
         size=0.1 * size,
-        position=(-pos - 0.5 * size, pos + 0.5 * size),
+        position=(
+            -pos - 0.5 * size,
+            pos + 0.5 * size + (text.count("\n") - 0.5) * 0.1 * size,
+        ),
         justify="center",
         layer=LAYERS.DEVICE_REMOVE,
     )
