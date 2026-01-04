@@ -874,7 +874,7 @@ def device(text: str) -> gf.Component:
     ).remap_layers({(0, 0): LAYERS.DEVICE_REMOVE})
     symbol_cal.transform(
         klayout.dbcore.DCplxTrans(
-            mag=0.06 * size,
+            mag=0.09 * size,
         )
     )
     symbol_cal_ref = c << symbol_cal
@@ -885,7 +885,7 @@ def device(text: str) -> gf.Component:
     ).remap_layers({(0, 0): LAYERS.DEVICE_REMOVE})
     symbol_eye.transform(
         klayout.dbcore.DCplxTrans(
-            mag=0.08 * size,
+            mag=0.09 * size,
         )
     )
     symbol_eye_ref = c << symbol_eye
