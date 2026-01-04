@@ -443,7 +443,7 @@ def z_cant_half() -> gf.Component:
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    anchor1_ref.move((ZCANT_LENGTH1 - ZCANT_BEAM1_WIDTH, anchor1_y))
+    anchor1_ref.move((ZCANT_LENGTH1 - 0.5 * ZCANT_BEAM1_WIDTH, anchor1_y))
 
     anchor2_y = 0.5 * ZCANT_WIDTH - ZCANT_BEAM2_INSET + ZCANT_BEAM2_LENGTH
     anchor2_ref = c << gl.basic.rectangle(
@@ -529,7 +529,10 @@ def z_cant_half() -> gf.Component:
 
     zactuator_anchor4_y = 0.5 * ZACTUATOR_WIDTH + ZACTUATOR_BEAM_LENGTH
     anchor4_ref = c << gf.components.rectangle(
-        size=(ZDRIVE_ANCHOR_SIZE, WIRE_BOND_OFFSET - zactuator_anchor4_y),
+        size=(
+            ZDRIVE_ANCHOR_SIZE,
+            WIRE_BOND_OFFSET - 1.5 * WIRE_BOND_SIZE - zactuator_anchor4_y,
+        ),
         layer=LAYERS.DEVICE,
         centered=False,
     )
@@ -540,15 +543,7 @@ def z_cant_half() -> gf.Component:
         layer=LAYERS.DEVICE,
         centered=False,
     )
-    wire_bond0_ref.move(
-        (
-            ZCANT_LENGTH1
-            - ZCANT_BEAM1_WIDTH
-            - 0.5 * WIRE_BOND_SIZE
-            + 0.5 * ZDRIVE_ANCHOR_SIZE,
-            WIRE_BOND_OFFSET,
-        )
-    )
+    wire_bond0_ref.move((ZCANT_LENGTH1 - 0.5 * ZCANT_BEAM1_WIDTH, WIRE_BOND_OFFSET))
 
     wire_bond1_ref = c << gf.components.rectangle(
         size=(WIRE_BOND_SIZE, WIRE_BOND_SIZE),
@@ -558,7 +553,7 @@ def z_cant_half() -> gf.Component:
     wire_bond1_ref.move(
         (
             x_end + ZDRIVE_CLEARANCE - WIRE_BOND_SIZE + ZDRIVE_ANCHOR_SIZE,
-            WIRE_BOND_OFFSET,
+            WIRE_BOND_OFFSET - 1.5 * WIRE_BOND_SIZE,
         )
     )
 
