@@ -187,6 +187,15 @@ if not args.no_merge:
     )
 
     for i, reticle in enumerate(reticles):
+        for key, value in placements.items():
+            if value[0] == i:
+                _ = reticle << gf.components.text(
+                    text=str(LAYERS(key)),
+                    size=0.2 * CHIP_SIZE,
+                    position=(value[1], value[2]),
+                    justify="center",
+                    layer=LAYERS.DUMMY,
+                )
         reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
 
         if args.mirror:
