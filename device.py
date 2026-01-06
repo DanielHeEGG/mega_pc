@@ -60,6 +60,8 @@ ZDRIVE_OUTER_RADIUS = 2500
 ZDRIVE_RING_SPAN = 60
 ZDRIVE_ANCHOR_SIZE = 120
 
+Z_RELEASE_LOCK_SPAN = (40, 50)
+
 ZCANT_WIDTH = 600
 ZCANT_LENGTH1 = 600
 ZCANT_LENGTH2 = 100
@@ -695,12 +697,11 @@ def zr_connector() -> gf.Component:
 def z_release_lock() -> gf.Component:
     c = gf.Component()
 
-    angle = 0.5 * ZDRIVE_RING_SPAN + CAVITY_WIDTH / ZDRIVE_INNER_RADIUS / (np.pi / 180)
     middle_radius = 0.5 * (ZDRIVE_INNER_RADIUS + CHIP_BOND_RADIUS - CAVITY_WIDTH)
     _ = c << gl.basic.ring(
         radius_inner=ZDRIVE_INNER_RADIUS,
         radius_outer=middle_radius,
-        angles=(angle, 90 - angle),
+        angles=Z_RELEASE_LOCK_SPAN,
         geometry_layer=LAYERS.DEVICE,
         angle_resolution=ANGLE_RESOLUTION,
         release_spec=None,
@@ -708,7 +709,7 @@ def z_release_lock() -> gf.Component:
     _ = c << gl.basic.ring(
         radius_inner=middle_radius,
         radius_outer=CHIP_BOND_RADIUS - CAVITY_WIDTH,
-        angles=(angle, 90 - angle),
+        angles=Z_RELEASE_LOCK_SPAN,
         geometry_layer=LAYERS.DEVICE,
         angle_resolution=ANGLE_RESOLUTION,
         release_spec=RELEASE_SPEC,
