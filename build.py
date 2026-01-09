@@ -176,7 +176,7 @@ for layer in [
     )
 
 c.flatten()
-c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds")
+c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds", with_metadata=False)
 
 if not args.no_merge:
     # generate reticles
@@ -208,12 +208,15 @@ if not args.no_merge:
                     layer=LAYERS.DUMMY,
                 )
         reticle.flatten()
-        reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
+        reticle.write_gds(
+            f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds", with_metadata=False
+        )
 
         if args.mirror:
             reticle.mirror_x(0)
             reticle.write_gds(
-                f"./build/mega_pc_{args.version}_BUILD_ASML_{i}_MIRROR.gds"
+                f"./build/mega_pc_{args.version}_BUILD_ASML_{i}_MIRROR.gds",
+                with_metadata=False,
             )
 
     with open(f"./build/mega_pc_{args.version}_BUILD_ASML_PLACEMENTS.txt", "w") as f:
@@ -234,13 +237,15 @@ if not args.no_merge:
             text=date_str,
         )
         wafer.write_gds(
-            f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}.gds"
+            f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}.gds",
+            with_metadata=False,
         )
 
         if args.mirror:
             wafer.mirror_x(0)
             wafer.write_gds(
-                f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}_MIRROR.gds"
+                f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}_MIRROR.gds",
+                with_metadata=False,
             )
 
         with open(
