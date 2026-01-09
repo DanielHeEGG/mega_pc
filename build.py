@@ -1,9 +1,18 @@
 import gdsfactory as gf
-import gfebuild as gb
+
+gf.clear_cache()
+
+
 import gfelib as gl
+import gfebuild as gb
 import sys
 import datetime
 import argparse
+
+from pdk import LAYERS, PDK
+from device import device, CHIP_SIZE, CAVITY_WIDTH
+
+PDK.activate()
 
 parser = argparse.ArgumentParser(description="Build script for MEGA-PC")
 parser.add_argument(
@@ -36,18 +45,19 @@ parser.add_argument(
     default="",
 )
 
-
 args = parser.parse_args()
 
 date_str = str(datetime.date.today())
 
-
-gf.clear_cache()
-
-from pdk import LAYERS, PDK
-from device import device, CHIP_SIZE, CAVITY_WIDTH
-
-PDK.activate()
+WAFER_DIAMETER = 150000
+WAFER_ALIGNMENT_MARKS = [
+    (-40000, 2000),
+    (40000, 2000),
+    (-40000, -2000),
+    (40000, -2000),
+    (-8000, 48000),
+    (8000, 48000),
+]
 
 CHIP_RECT = gf.components.rectangle(
     size=(CHIP_SIZE, CHIP_SIZE),
@@ -169,6 +179,7 @@ c.flatten()
 c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds")
 
 if not args.no_merge:
+    # generate reticles
     reticles, placements = gb.asml300.reticle(
         component=c,
         image_size=(CHIP_SIZE, CHIP_SIZE),
@@ -206,9 +217,46 @@ if not args.no_merge:
 
     with open(f"./build/mega_pc_{args.version}_BUILD_ASML_PLACEMENTS.txt", "w") as f:
         for key, value in placements.items():
-            f.write(
-                f"{LAYERS(key)}: R {value[0]}, CX {value[1]:.2f}, CY {value[2]:.2f}\n"
+            f.write(f"{LAYERS(key)}: {value[0]}, {value[1]:.2f}, {value[2]:.2f}\n")
+
+    # generate wafer masks for backside
+    for layer in [LAYERS.HANDLE_REMOVE, LAYERS.CAP_BACKSIDE]:
+        wafer, placements = gb.asml300.wafer(
+            radius=0.5 * WAFER_DIAMETER,
+            chip_center=True,
+            place_partial=False,
+            marks=WAFER_ALIGNMENT_MARKS,
+            component=c,
+            image_size=(CHIP_SIZE, CHIP_SIZE),
+            image_layer=layer,
+            id=f"MPC-{args.version}-{LAYERS(layer)}",
+            text=date_str,
+        )
+        wafer.write_gds(
+            f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}.gds"
+        )
+
+        if args.mirror:
+            wafer.mirror_x(0)
+            wafer.write_gds(
+                f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}_MIRROR.gds"
             )
+
+        with open(
+            f"./build/mega_pc_{args.version}_BUILD_WAFER_{LAYERS(layer)}_PLACEMENTS.txt",
+            "w",
+        ) as f:
+            f.write(f"WAFER_DIAMETER: {WAFER_DIAMETER:.2f}\n")
+            f.write(f"X_STEP_SIZE: {CHIP_SIZE:.2f}\n")
+            f.write(f"Y_STEP_SIZE: {CHIP_SIZE:.2f}\n")
+            f.write(f"CHIP_COUNT: {len(placements)}\n")
+            f.write(f"\n")
+            for mark in WAFER_ALIGNMENT_MARKS:
+                f.write(f"MARK: {mark[0]:.2f}, {mark[1]:.2f}\n")
+            f.write(f"\n")
+            for placement in placements:
+                f.write(f"CHIP: {placement[0]:.2f}, {placement[1]:.2f}\n")
+
 
 if args.show:
     c.show()
