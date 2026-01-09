@@ -207,6 +207,7 @@ if not args.no_merge:
                     justify="center",
                     layer=LAYERS.DUMMY,
                 )
+        reticle.flatten()
         reticle.write_gds(f"./build/mega_pc_{args.version}_BUILD_ASML_{i}.gds")
 
         if args.mirror:
