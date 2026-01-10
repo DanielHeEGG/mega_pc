@@ -12,6 +12,8 @@ import argparse
 from pdk import LAYERS, PDK
 from device import device, CHIP_SIZE, CAVITY_WIDTH
 
+DEVICE_CD_COMPENSATION = 0.3
+
 PDK.activate()
 
 parser = argparse.ArgumentParser(description="Build script for MEGA-PC")
@@ -177,9 +179,9 @@ for layer in [
 
 # PROCESS COMPENSATION
 
-# DRIE expands all features by 0.3 um
-c.offset(layer=LAYERS.DEVICE_REMOVE, distance=-0.3)
-c.offset(layer=LAYERS.HANDLE_REMOVE, distance=-0.3)
+# Add CD compensation
+c.offset(layer=LAYERS.DEVICE, distance=DEVICE_CD_COMPENSATION)
+c.offset(layer=LAYERS.DEVICE_REMOVE, distance=-DEVICE_CD_COMPENSATION)
 
 c.flatten()
 c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds", with_metadata=False)
