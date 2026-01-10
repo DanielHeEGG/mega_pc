@@ -175,6 +175,12 @@ for layer in [
         layer2=layer,
     )
 
+# PROCESS COMPENSATION
+
+# DRIE expands all features by 0.3 um
+c.offset(layer=LAYERS.DEVICE_REMOVE, distance=-0.3)
+c.offset(layer=LAYERS.HANDLE_REMOVE, distance=-0.3)
+
 c.flatten()
 c.write_gds(f"./build/mega_pc_{args.version}_BUILD.gds", with_metadata=False)
 
